@@ -9,4 +9,4 @@ A repository to do plotting for HTTCP analysis. The plots can be produced at the
  - cosine function is used for fitting
 
 ## Thanks
-to Gourab Saha for providing this code for the HToTauTau Channel
+to Gourab Saha for providing this code for the HToTauTau Channel : (https://github.com/gsaha009/PlayingCP)
