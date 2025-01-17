@@ -18,16 +18,18 @@ from iminuit.cost import LeastSquares
 hep.style.use("CMS")
 print("iminuit version:", iminuit.__version__)
 
-tag = "IPNP" #q? what is this for ?
+tag = "IPDP" #q? what is this for ? -> to plot
+#tag = "IPIP"
+#tag = "IPPV"
 
 catdict = {
-    r"$\mu-\pi$"     : 401311, #q? can i leave the tag numbers in here ?
-    r"$\mu-\rho$"    : 401313,
-    r"$\mu-a^{1}_{3\pi}$" : 401317,
+    r"$\mu-\pi$"     : 20014002, # 20.000.000+14.000+2=mutau/lepD/pi_2  #TODO check cat ID in config/categories.py
+    r"$\mu-\rho$"    : 20014004, # 20.000.000+14.000+4=mutau/lepD/rho_2
+    r"$\mu-a^{1}_{3\pi}$" : 20014008, # 20.000.000+14.000+8=mutau/lepD/a1dm10_2
 
 }
 shiftdict = {
-    "cp_even" : 150, #q? can i leave the tag numbers in here ?
+    "cp_even" : 150, #ID from shifts stay the same from condig_run3.py
     "cp_odd"  : 151,
 }
 simpledict = {
@@ -56,7 +58,7 @@ def makesimple(latex_str):
 
 np.linspace(0., 10., 20)
 
-file = f"INPUT/shifted_hist__PhiCPGen_{tag}.pickle" #TODO change this file
+file = f"INPUT/shifted_hist__PhiCPGen_{tag}.pickle"
 #q? which file to use ? -> /eos/user/m/mawitt/share/OutputCP/cf_store/analysis_httcp/cf.PlotShiftedVariables1D/run3_2022_preEE_nano_cp_tau_v14/calib__main/sel__main/prod__main/weight__main/shifts_tauspinner/datasets_h_ggf_tautau_uncorrelated_filter/PhiCPtt+mt_12jan25
 
 
