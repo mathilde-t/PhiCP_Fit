@@ -1,6 +1,6 @@
 import os
 import re
-import ROOT
+#import ROOT
 import hist
 import pickle
 import mplhep as hep
@@ -17,20 +17,18 @@ from iminuit import Minuit
 from iminuit.cost import LeastSquares
 hep.style.use("CMS")
 print("iminuit version:", iminuit.__version__)
+import itertools
 
-tag = "IPDP" #q? what is this for ? -> to plot
-#tag = "IPIP"
-#tag = "IPPV"
-
+tags = ["IPIP", "IPDP", "IPPV"]  # Define the tags
 catdict = {
-    r"$\mu-\pi$"     : 20014002, # 20.000.000+14.000+2=mutau/lepD/pi_2  #TODO check cat ID in config/categories.py
-    r"$\mu-\rho$"    : 20014004, # 20.000.000+14.000+4=mutau/lepD/rho_2
-    r"$\mu-a^{1}_{3\pi}$" : 20014008, # 20.000.000+14.000+8=mutau/lepD/a1dm10_2
-
+    r"$\mu-\pi$"     : 20014002,
+    r"$\mu-\rho$"    : 20014004,
+    r"$\mu-a^{1}_{3\pi}$" : 20014008,
 }
 shiftdict = {
-    "cp_even" : 150, #ID from shifts stay the same from condig_run3.py
-    "cp_odd"  : 151,
+    "cp_even": {"shift": 150, "colour": "red", "location": "upper right"},
+    "cp_odd": {"shift": 151, "colour": "blue", "location": "lower left"},
+    "cp_maxmix": {"shift": 0, "colour": "black", "location": "lower right"},
 }
 simpledict = {
     r"$\mu-\pi$"     : "mupi",
@@ -38,129 +36,107 @@ simpledict = {
     r"$\mu-a^{1}_{3\pi}$" : "mua13pr",
 }
 
+fit_results = { "tags": {}, "cats": {}, "asymmetry": {} }         # e.g tag = IPDP, cat == key = mupi, Asymmetry = num
+asymmetry_results = {}  # Dictionary to store asymmetry results per tag
+
 def comp_asymmetry(arr1, arr2):
     # https://github.com/Ksavva1021/TIDAL/blob/656f992ae056b3fed0061f2b3efb49905c39834d/CP_Tools/scripts/assymetry.py#L26
     return (1/arr1.size)*np.sum(np.abs((arr1-arr2)/(arr1+arr2)))
 
-def makesimple(latex_str):
-    # Remove LaTeX commands (e.g., $...$, \frac, \text, etc.)
-    plain_text = re.sub(r'\\[a-zA-Z]+\{[^}]*\}', '', latex_str)  # Remove \command{...}
-    print(plain_text)
-    plain_text = re.sub(r'\$.*?\$', '', plain_text)  # Remove math expressions between $...$
-    print(plain_text)
-    plain_text = re.sub(r'\\[a-zA-Z]+', '', plain_text)  # Remove other LaTeX commands (e.g., \chi)
-    print(plain_text)
+def comp_asymmetry_error(arr1, arr2, err1, err2): #arr = array of values, err = array of errors
+    # Terms for partial derivatives
+    denom = arr1 + arr2
+    term1 = err1 * np.abs((2 * arr2) / (denom**2))
+    term2 = err2 * np.abs((2 * arr1) / (denom**2))
+    # Propagate errors
+    sigma_A = np.sqrt(np.sum(term1**2 + term2**2)) / arr1.size
+    return sigma_A
 
-    # Clean up any remaining special characters
-    plain_text = plain_text.replace('$', '')  # Remove leftover dollar signs
-    print(plain_text)    
-    return plain_text
+for tag in tags:
+    # Update the file path according to the tag
+    file = f"INPUT/shifted_hist__PhiCPGen_{tag}.pickle"
 
-np.linspace(0., 10., 20)
+    # Load data and perform calculations as in your original code (already done in your script)
+    fileptr = open(file, 'rb')
+    data = pickle.load(fileptr)
+    fileptr.close()
 
-file = f"INPUT/shifted_hist__PhiCPGen_{tag}.pickle"
-#q? which file to use ? -> /eos/user/m/mawitt/share/OutputCP/cf_store/analysis_httcp/cf.PlotShiftedVariables1D/run3_2022_preEE_nano_cp_tau_v14/calib__main/sel__main/prod__main/weight__main/shifts_tauspinner/datasets_h_ggf_tautau_uncorrelated_filter/PhiCPtt+mt_12jan25
+    axes = data.axes
+    category_axis = axes['category']
+    shift_axis = axes['shift']
+    
+    cparray = {}
 
+    for ccat, cval in catdict.items():
+        shiftarray = {}
+        for cat, props in shiftdict.items():
+            shift = props["shift"]
+            colour = props["colour"]
+            location = props["location"]
 
-fileptr = open(file, 'rb')
-data = pickle.load(fileptr)
-fileptr.close()
+            if cval not in category_axis:
+                print(f"WARNING : {cval} not in categories")
+                continue
 
-axes = data.axes
-category_axis  = axes['category']
-shift_axis = axes['shift']
+            shift_index = shift_axis.index(props["shift"])    
+            values = data[category_axis.index(cval), :, shift_axis.index(props["shift"]), :].values()
+            errors = data[category_axis.index(cval), :, shift_axis.index(props["shift"]), :].variances() ** 0.5
+            shiftarray[cat] = {
+                "values": values,
+                "errors": errors,
+                "colour": colour,
+                "location": location,
+            }
 
-cparray = {}
-for ckey, cval in catdict.items():
-    shiftarray = {}
-    for key,val in shiftdict.items():
-        if cval not in category_axis:
-            print(f"WARNING : {cval} not in categories")
-            continue
-        values = data[category_axis.index(cval), :, shift_axis.index(val), :].values()
-        # https://github.com/oponcet/CPinHToTauTau/blob/FF_dev_project/script_FF/fake_factor_derivation/src/input_processing.py#L133
-        errors = data[category_axis.index(cval), :, shift_axis.index(val), :].variances() ** 0.5
-        #shiftarray[key] = data[category_axis.index(cval), :, shift_axis.index(val), :].values()
-        shiftarray[key] = [values, errors]
-    cparray[ckey] = shiftarray
+        cparray[ccat] = shiftarray
 
-cpfitarray = {}
-x = np.linspace(0., 2*np.pi, 20)
-def model(x, a, b):
-    return a*np.cos(x) + b
+    # Now calculate the asymmetry values and store them in the results dictionary for the current tag
+    for category1, category2 in itertools.combinations(shiftdict.keys(), 2): # Loop over pairs of categories
+        hypothesis1 = np.ravel(cparray[ccat][category1]["values"])
+        hypothesis2 = np.ravel(cparray[ccat][category2]["values"])
+        error1 = np.ravel(cparray[ccat][category1]["errors"])
+        error2 = np.ravel(cparray[ccat][category2]["errors"])
 
-def fit(x, y, err=0.05, model=model):
-    lsq = LeastSquares(x, y, err, model)
-    m = Minuit(lsq, a=0.1, b=0.1)
-    #m.scan(ncall=100)
-    m.fixed = False
-    m.migrad()  # finds minimum of least_squares function
-    m.hesse()  # accurately computes uncertainties    
-    return m, err
+        asymmetry = comp_asymmetry(hypothesis1, hypothesis2)
+        asymmetry_error = comp_asymmetry_error(hypothesis1, hypothesis2, error1, error2)
 
-for key, val in cparray.items():
-    print(key)
-    if len(val) == 0:
-        print(f"WARNING : {key} has empty dict")
-        continue
-    even_zip = val["cp_even"]
-    even, even_err = even_zip[0][0], even_zip[1][0]
-    odd_zip  = val["cp_odd"]
-    odd, odd_err = odd_zip[0][0], odd_zip[1][0]
-    m_even, err_even = fit(x, even, even_err)
-    m_odd, err_odd = fit(x, odd, odd_err)
+        # Store the results in the dictionary under the tag and category pair
+        asymmetry_results[tag] = asymmetry_results.get(tag, {})
+        asymmetry_results[tag][f"{category1}_vs_{category2}"] = {
+            "asymmetry_val": asymmetry,
+            "asymmetry_error": asymmetry_error
+        }
 
-    cpfitarray[key] = {"m_even": m_even, "m_odd": m_odd}
-
-    # plot
+for tag in tags:
     plt.figure(figsize=(8.9, 6.6))
-    #plt.subplots_adjust(top=0.85)
-
-    # Add CMS-style text
     hep.cms.text("Simulation", loc=1)
-    #plt.text(0, 21, "CMS Simulation", fontsize=12, ha='left')
-    
-    plt.errorbar(x, even, even_err, fmt="o",color="blue")
-    #plt.scatter(x, even, color="blue")
-    even_fit = model(x, *m_even.values)
-    lin1, = plt.plot(x, even_fit, color="blue")
 
-    # display legend with some fit info
-    fit_info_even = [
-        f"$\\chi^2$/$n_\\mathrm{{dof}}$ = {m_even.fval:.1f} / {m_even.ndof:.0f} = {m_even.fmin.reduced_chi2:.1f}",
-    ]
+    # Prepare the data for plotting
+    asymmetry_vals = []
+    asymmetry_errs = []
+    categories = []
 
-    #for p, v, e in zip(m.parameters, m.values, m.errors):
-    #    fit_info.append(f"{p} = ${v:.3f} \\pm {e:.3f}$")
-    leg_even_handle = Line2D([0], [0], color='blue', label="CP even")
-    leg_even = plt.legend(handles=[leg_even_handle],title="\n".join(fit_info_even), frameon=False, loc="upper right", fontsize=20, title_fontsize=15)
-    plt.gca().add_artist(leg_even)
-    
+    for category in catdict.keys():  # Loop through all categories
+        # Retrieve the asymmetry value and error for each category under the current tag
+        asymmetry_val = asymmetry_results[tag].get(f"cp_even_vs_cp_odd", {}).get("asymmetry_val", 0)
+        asymmetry_error = asymmetry_results[tag].get(f"cp_even_vs_cp_odd", {}).get("asymmetry_error", 0)
 
-    plt.errorbar(x, odd, odd_err, fmt="o",color="red")
-    #plt.scatter(x, odd, color="red")
-    odd_fit = model(x, *m_odd.values)
-    lin2, = plt.plot(x, odd_fit, color="red")
+        if asymmetry_val != 0:
+            asymmetry_vals.append(asymmetry_val)
+            asymmetry_errs.append(asymmetry_error)
+            categories.append(simpledict.get(category, category))  # Use 'simpledict' to convert category to label
 
-    fit_info_odd = [
-        f"$\\chi^2$/$n_\\mathrm{{dof}}$ = {m_odd.fval:.1f} / {m_odd.ndof:.0f} = {m_odd.fmin.reduced_chi2:.1f}",
-    ]
+    # Plot the results for this tag
+    plt.errorbar(categories, asymmetry_vals, yerr=asymmetry_errs, fmt="o", label=f"Tag: {tag}")
 
-    leg_odd_handle = Line2D([0], [0], color='red', label="CP odd")
-    plt.legend(handles=[leg_odd_handle], title="\n".join(fit_info_odd), frameon=False, loc="lower left", fontsize=20, title_fontsize=15)
-    #plt.gca().add_artist(leg_odd)
-
-    plt.xlabel(r"$\Phi_{CP}$"+f" ({tag})")
-    plt.ylabel("a.u")
-
-    asymm = comp_asymmetry(even_fit, odd_fit)
-    
-    plt.title(f"{key} (A = {round(asymm, 3)})", fontsize=25, loc='center')
-    
-
-    plt.ylim(0.0, 
-             np.max(odd_fit) + 0.65*np.max(odd_fit))
-
+    # Customize the plot
+    plt.xlabel("Categories", fontsize=20)
+    plt.ylabel("Asymmetry Value", fontsize=20)
+    plt.title(f"Asymmetry for {tag}", fontsize=25)
+    plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig(f"OUTPUT/{tag}_{simpledict[key]}.pdf", dpi=300)
+    plt.legend()
+
+    # Save the plot
+    plt.savefig(f"OUTPUT/{tag}_asymmetry_plot.pdf", dpi=300)
     plt.show()
