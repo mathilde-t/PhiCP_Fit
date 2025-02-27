@@ -290,7 +290,8 @@ for tag in tags:  # Loop over tags
             plt.show()
             
 
-colour_palette = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+colour_palette = ['#998ec3', '#d78a7e', '#fec44f']
+#    'b', 'g', 'r', 'c', 'm', 'y', 'k', '#FF5733', '#33FF57', '#5733FF']
 
 def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None, selected_tags=None, selected_keys=None):
     if selected_cats is None:
@@ -373,16 +374,36 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
     plt.figure(figsize=(8.9, 6.6))
     hep.cms.text("Simulation", loc=0)
     
+    unique_labels = list(dict.fromkeys(labels))  # Preserve order
+    label_to_xpos = {label: i for i, label in enumerate(unique_labels)}
+
     # Plot using assigned colors per dir_name
     for i in range(len(asymmetry_values)):
         plt.errorbar(labels[i], asymmetry_values[i], yerr=asymmetry_errors[i], fmt='o', color=colours[i])
+
+    gen_max = max([val for lbl, val in zip(labels, asymmetry_values) if lbl == "IPPV Gen"])
+    max_values = {}
+
+    for label, value in zip(labels, asymmetry_values):
+        if label not in max_values or value > max_values[label]:
+            max_values[label] = value
+
+    # Add percentage labels above highest points for each label
+    for label, max_val in max_values.items():
+        percent = 100 if label == "IPPV Gen" else (max_val / gen_max) * 100  # Relative percentage
+        x_pos = label_to_xpos[label]
+        plt.text(x_pos, max_val + 0.02, f"{percent:.1f}%", ha="center", fontsize=10, color="black")
+
+    print("labels : ", labels)
+    print("asymmetry_values : ", asymmetry_values)
+    print("asymmetry_errors : ", asymmetry_errors)
 
     if asymmetry_values.size > 0:
         A_y_min = np.min(asymmetry_values)
         A_y_max = np.max(asymmetry_values)
     
         y_min = A_y_min - 0.5 * A_y_min
-        y_max = A_y_max + 0.4 * A_y_max
+        y_max = A_y_max + 0.5 * A_y_max
                 
         plt.ylim(0, y_max)
     
@@ -394,10 +415,11 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
     if info_text:
         plt.annotate(info_text, xy=(0.05, 0.85), xycoords="axes fraction", fontsize=10,
                      bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white"))
-    plt.legend(handles=legend_handles.values(), loc="upper right", fontsize=8)
+    plt.legend(handles=legend_handles.values(), bbox_to_anchor=(0.95, 0.94), loc="upper right", fontsize=8)
 
  
     plt.grid()
+    plt.savefig("OUTPUT/Asymmetry.pdf", dpi=300, bbox_inches='tight')
     plt.show()
 
 compare_asymmetries(data_storage, 
