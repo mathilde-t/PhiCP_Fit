@@ -372,7 +372,7 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
     asymmetry_errors = np.array(asymmetry_errors)
 
     plt.figure(figsize=(8.9, 6.6))
-    hep.cms.text("Simulation", loc=0)
+    hep.cms.text("Private work", loc=0)
     
     unique_labels = list(dict.fromkeys(labels))  # Preserve order
     label_to_xpos = {label: i for i, label in enumerate(unique_labels)}
