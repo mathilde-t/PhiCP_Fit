@@ -1,12 +1,15 @@
-# Fit Function for Periodic Distributions from Columnflow
-### for PhiCP of HToMuTau
+# Fit Function for Periodic Distributions and Showcase of their Asymmetry
 
-A repository to do plotting for HTTCP analysis. The plots can be produced at the end of columnflow, but this repo is for doing plotting from pickle or parquet files. 
+A repository for plotting in the **HTTCP analysis**.  
+The plots can be produced at the end of columnflow, but this repo is for doing plotting from **pickle** or **parquet** files.  
 
-## PhiCP - fitting (iminuit)
+## Produces
+- **Cosine fit** for Φ<sub>CP</sub> distributions in the **H → ττ → τ<sub>l</sub>τ<sub>h</sub>** channel for multiple hypothesis 
+- **Plots the Asymmetry** between different hypotheses  
 
- - Preliminary : PhiCP distributions are from gen level only
- - cosine function is used for fitting
+## Uses</span>  
+- Output (.pickle) from Columnflow
 
-## Thanks
-to Gourab Saha for providing this code for the HToTauTau Channel : (https://github.com/gsaha009/PlayingCP)
+## Thanks 
+Thanks to **Gourab Saha** for providing the **original Φ<sub>CP</sub> fit code** for the HToTauTau Analysis:  
+[Gourab's Repo](https://github.com/gsaha009/PlayingCP)  
