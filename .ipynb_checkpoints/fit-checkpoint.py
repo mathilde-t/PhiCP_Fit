@@ -407,7 +407,7 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
                 
         plt.ylim(0, y_max)
     
-    plt.xticks(rotation=90)
+    plt.xticks(rotation=45)
     plt.ylabel("Asymmetry")
     plt.title("Comparison of Asymmetries", pad=45)
     #plt.tight_layout()

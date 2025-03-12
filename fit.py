@@ -291,13 +291,12 @@ for tag in tags:  # Loop over tags
             
 
 colour_palette = ['#998ec3', '#d78a7e', '#fec44f']
-#    'b', 'g', 'r', 'c', 'm', 'y', 'k', '#FF5733', '#33FF57', '#5733FF']
 
 def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None, selected_tags=None, selected_keys=None):
     if selected_cats is None:
         selected_cats = list(data_storage.keys())
     if selected_datasets is None:
-        selected_datasets = [ds for cat in selected_cats for ds in data_storage[cat].keys()]       
+        selected_datasets = [ds for cat in selected_cats for ds in data_storage[cat].keys()]
     if selected_keys is None:
         selected_keys = [key for cat in selected_cats for ds in selected_datasets for tag in selected_tags for key in data_storage[cat][ds].get(tag, {}).keys()]
 
@@ -305,6 +304,17 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
     print("selected_datasets:", selected_datasets)
     print("selected_tags", selected_tags)
     print("selected_keys", selected_keys)
+
+    used_tags = {}
+    for tag in selected_tags:
+        if "Gen" in tag:
+            used_tags[tag] = r"full $p_T^{\tau}$ (Gen)"
+        elif "Reco" in tag:
+            used_tags[tag] = r"visible $p_T^{\tau}$"
+        elif "fastMTT" in tag:
+            used_tags[tag] = r"fastMTT $p_T^{\tau}$"
+        else:
+            used_tags[tag] = tag
 
     info_text = []
 
@@ -317,9 +327,8 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
     if len(selected_keys) == 1:
         info_text.append(f"Asymmetry of : {selected_keys[0]}")
 
-    info_text = "\n".join(info_text) if info_text else None
-
-
+    # Ersetze "_" durch Leerzeichen
+    info_text = "\n".join(line.replace("_", " ") for line in info_text) if info_text else None
 
     asymmetry_values = []
     asymmetry_errors = []
@@ -328,8 +337,7 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
 
     colour_map = {dir_name: colour_palette[i % len(colour_palette)] for i, dir_name in enumerate(selected_datasets)}
     legend_handles = {}
-    
-    # iterate over selected categories, tags and keys
+
     for cat in selected_cats:
         if cat not in data_storage:
             continue
@@ -341,25 +349,20 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
             if dir_name not in legend_handles:
                 legend_handles[dir_name] = plt.Line2D([0], [0], marker='o', color=colour, linestyle='None', label=dir_name)
 
-
-            # Filter available tags for the current dataset
             available_tags = [tag for tag in selected_tags if tag in data_storage[cat][dir_name]]
-        
+
             for tag in available_tags:
                 for key in selected_keys:
                     if key in data_storage[cat][dir_name][tag]:
                         data_entry = data_storage[cat][dir_name][tag][key]
-                        
-                        # Check if the key is a comparison of two hypotheses
+
                         if "_vs_" in key and "asymmetry_val" in data_entry and "asymmetry_error" in data_entry:
                             asymmetry_values.append(data_entry["asymmetry_val"])
                             asymmetry_errors.append(data_entry["asymmetry_error"])
-                            
+
                             label_parts = []
                             if len(selected_cats) > 1:
                                 label_parts.append(cat)
-                            #if len(selected_datasets) > 1:
-                            #    label_parts.append(dir_name)
                             if len(selected_tags) > 1:
                                 label_parts.append(tag)
                             if len(selected_keys) > 1:
@@ -373,51 +376,63 @@ def compare_asymmetries(data_storage, selected_cats=None, selected_datasets=None
 
     plt.figure(figsize=(8.9, 6.6))
     hep.cms.text("Private work", loc=0)
-    
-    unique_labels = list(dict.fromkeys(labels))  # Preserve order
+
+    unique_labels = list(dict.fromkeys(labels))
     label_to_xpos = {label: i for i, label in enumerate(unique_labels)}
 
-    # Plot using assigned colors per dir_name
-    for i in range(len(asymmetry_values)):
-        plt.errorbar(labels[i], asymmetry_values[i], yerr=asymmetry_errors[i], fmt='o', color=colours[i])
-
-    gen_max = max([val for lbl, val in zip(labels, asymmetry_values) if lbl == "IPPV Gen"])
     max_values = {}
+    max_errors = {}
 
-    for label, value in zip(labels, asymmetry_values):
+    for label, value, error in zip(labels, asymmetry_values, asymmetry_errors):
         if label not in max_values or value > max_values[label]:
             max_values[label] = value
+            max_errors[label] = error
 
-    # Add percentage labels above highest points for each label
+    filtered_labels = list(max_values.keys())
+    filtered_values = list(max_values.values())
+    filtered_errors = [max_errors[label] for label in filtered_labels]
+
+    filtered_x_positions = [label_to_xpos[label] for label in filtered_labels]
+    plt.errorbar(filtered_x_positions, filtered_values, yerr=filtered_errors, fmt='o', color=colour_palette[1])
+    ## SWITCH : Plot using assigned colours per dataset
+    #for i in range(len(asymmetry_values)):
+    #    plt.errorbar(labels[i], asymmetry_values[i], yerr=asymmetry_errors[i], fmt='o', color=colours[i])
+
+
+    gen_max = max([val for lbl, val in zip(labels, asymmetry_values) if lbl == "IPPV Gen"])
+    gen_max_error = next(err for lbl, val, err in zip(labels, asymmetry_values, asymmetry_errors) if lbl == "IPPV Gen")
+
     for label, max_val in max_values.items():
-        percent = 100 if label == "IPPV Gen" else (max_val / gen_max) * 100  # Relative percentage
+        max_err = max_errors[label]
         x_pos = label_to_xpos[label]
-        plt.text(x_pos, max_val + 0.02, f"{percent:.1f}%", ha="center", fontsize=10, color="black")
 
-    print("labels : ", labels)
-    print("asymmetry_values : ", asymmetry_values)
-    print("asymmetry_errors : ", asymmetry_errors)
+        percent = 100 if label == "IPPV Gen" else (max_val / gen_max) * 100
+        percent_err = percent * np.sqrt((max_err / max_val) ** 2 + (gen_max_error / gen_max) ** 2)
+
+        plt.text(x_pos, max_val + 0.015, f"\n\n{percent:.1f} ± {percent_err:.1f}%", ha="center", fontsize=10, color="black")
 
     if asymmetry_values.size > 0:
         A_y_min = np.min(asymmetry_values)
         A_y_max = np.max(asymmetry_values)
-    
-        y_min = A_y_min - 0.5 * A_y_min
         y_max = A_y_max + 0.5 * A_y_max
-                
         plt.ylim(0, y_max)
-    
-    plt.xticks(rotation=90)
+
+    mapped_labels = [used_tags.get(label, label) for label in filtered_labels]
+    plt.xticks(ticks=filtered_x_positions, labels=mapped_labels, rotation=45)
+
+    plt.margins(x=0.1)
     plt.ylabel("Asymmetry")
     plt.title("Comparison of Asymmetries", pad=45)
-    #plt.tight_layout()
 
+    ### Infobox mit Legenden-Informationen ###
+    for i, (name, handle) in enumerate(legend_handles.items()):
+        plt.annotate(name, xy=(1.05, 0.5 - i * 0.05), xycoords="axes fraction", fontsize=10,
+                     color=handle.get_color())
+        
     if info_text:
         plt.annotate(info_text, xy=(0.05, 0.85), xycoords="axes fraction", fontsize=10,
                      bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white"))
-    plt.legend(handles=legend_handles.values(), bbox_to_anchor=(0.95, 0.94), loc="upper right", fontsize=8)
-
- 
+    
     plt.grid()
     plt.savefig("OUTPUT/Asymmetry.pdf", dpi=300, bbox_inches='tight')
     plt.show()
