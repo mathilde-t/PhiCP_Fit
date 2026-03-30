@@ -18,9 +18,10 @@ Output (.pickle) from Columnflow
 >    - Copy them to your **CERNBox**.
 >
 > 2. **Organise the files locally**
->    Maintain this structure:
+>    Place the following structure inside the `INPUT` directory:
 >
 >    ```text
+> version_name/
 >    ├── ggF
 >    │   ├── sm
 >    │   ├── mm
