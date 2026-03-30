@@ -20,7 +20,8 @@ Output (.pickle) from Columnflow
 > 1. **Copy the needed pickle files**
 >    Use `scripts/phi_cp_merges_hists.sh` to:
 >    - Select files by **CF production version**, **era**, and **process**.
->    - Copy them to your **CERNBox**.
+>    - Is performed from the within `cf.MergeHistograms`
+>    - Copies them to your **CERNBox**.
 >
 > 2. **Organise the files locally**
 >    Place the following structure inside the `INPUT` directory:
