@@ -1,7 +1,7 @@
 # CP Hypothesis Fit and Asymmetry Analysis in Periodic Distributions
 
 ## Overview
-A repository for plotting in the **HTTCP analysis**. This script performs a fit for three **CP hypotheses : CP-even, CP-odd, and maximal mixing**. It the asymmetries between these hypotheses and visualizes the results are computed. The approach can be applied to a **general case where periodic distributions are fitted and their asymmetries are analysed**.
+A repository for plotting in the **CPinHToTauTau analysis**. This script performs a fit for three **CP hypotheses : CP-even, CP-odd, and maximal mixing**. It the asymmetries between these hypotheses and visualizes the results are computed. The approach can be applied to a **general case where periodic distributions are fitted and their asymmetries are analysed**.
 
 ## Features
 - **Fit for CP Hypotheses :** The script provides fits to the data for the three CP hypotheses : CP-even, CP-odd, and maximal mixing.
@@ -10,6 +10,32 @@ A repository for plotting in the **HTTCP analysis**. This script performs a fit 
 
 ## Uses
 Output (.pickle) from Columnflow
+
+> ### How to prepare the files ?
+> 1. **Copy the needed pickle files**
+>    Use `scripts/phi_cp_merges_hists.sh` to:
+>    - Select files by **CF production version**, **era**, and **process**.
+>    - Copy them to your **CERNBox**.
+>
+> 2. **Organise the files locally**
+>    Maintain this structure:
+>
+>    ```text
+>    ├── ggF
+>    │   ├── sm
+>    │   ├── mm
+>    │   └── cpo
+>    └── VBF
+>        ├── sm
+>        ├── mm
+>        └── cpo
+>    ```
+>
+> 3. **Rename the files**
+>    Use `scripts/copy_merge_and_rename.sh` to:
+>    - Remove **process** and **CP hypothesis** from filenames.
+>    - => Ready to use for the **`PhiCPfit_BarPlot_DESYTau_cf_0p3.ipynb`** plotting script.
+
 
 ## Produces
 - **Cosine fit** for Φ<sub>CP</sub> distributions in the **H → ττ → τ<sub>l</sub>τ<sub>h</sub>** channel for multiple hypothesis
