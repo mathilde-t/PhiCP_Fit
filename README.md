@@ -1,7 +1,7 @@
 # CP Hypothesis Fit and Asymmetry Analysis in Periodic Distributions
 
 ## Overview
-A repository for plotting in the **CPinHToTauTau analysis**. This script performs a fit for three **CP hypotheses : CP-even, CP-odd, and maximal mixing**. It the asymmetries between these hypotheses and visualizes the results are computed. The approach can be applied to a **general case where periodic distributions are fitted and their asymmetries are analysed**.
+A repository for plotting in the **CPinHToTauTau analysis**. This script performs a fit for three **CP hypotheses : <span style="color: #d62839;">**CP-even**</span>, <span style="color: #28348e;">**CP-odd**</span>, and <span style="color: #2b663c;">**maximal mixing**</span>. It the asymmetries between these hypotheses and visualizes the results are computed. The approach can be applied to a **general case where periodic distributions are fitted `OUTPUT/version_name/<process_name>/*` and their asymmetries are analysed `OUTPUT/Asymmetry_*.pdf`**.
 
 ## Features
 - **Fit for CP Hypotheses :** The script provides fits to the data for the three CP hypotheses : CP-even, CP-odd, and maximal mixing.
@@ -21,7 +21,7 @@ Output (.pickle) from Columnflow
 >    Place the following structure inside the `INPUT` directory:
 >
 >    ```text
-> version_name/
+>    version_name/
 >    ├── ggF
 >    │   ├── sm
 >    │   ├── mm
@@ -49,10 +49,7 @@ Output (.pickle) from Columnflow
 
    $`fit = f(x) = a \cdot \cos(x + c) + b`$
 
-   Where :
-   - $`a`$ is the amplitude,
-   - $`b`$ is the offset,
-   - $`c`$ is the phase shift parameter.
+   Where $`a`$ is the amplitude, $`b`$ is the offset, and $`c`$ is the phase shift parameter.
   
 2) ### Fit Parameter Errors  
    The uncertainties on the fit parameters $`a`$, $`b`$, and $`c`$ are determined using the **Hesse matrix** from the Minuit minimisation :
