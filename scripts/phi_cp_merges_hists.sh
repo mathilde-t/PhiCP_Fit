@@ -1,22 +1,25 @@
 #!/bin/bash
 
-###########################################
-# Usage instructions
-#
-# Run normally (copies files) :
-#     ./phi_cp_merges_hists.sh
-#     ./phi_cp_merges_hists.sh <target_subdirectory>
-#
-# Run in dry-run mode (no files are actually copied) :
-#     ./phi_cp_merges_hists.sh --dry-run
-#     ./phi_cp_merges_hists.sh --dry-run <target_subdirectory>
-#
-# Notes:
-# - The <target_subdirectory> refers to the folder inside each dataset
-#   from which pickle files are collected (default: bugfree_samples_full_15_nov)
-# - Dry-run mode prints all actions without performing them
-# - The output directory is fixed at /eos/user/m/mwitt/phi_cp_merges_hists
-###########################################
+'''
+Author : Mathilde Witt
+Description : This script copies the pickle files obtained from cf into a given 
+            output directory
+            
+Usage instructions :
+Run normally (copies files) :
+    ./phi_cp_merges_hists.sh
+    ./phi_cp_merges_hists.sh <target_subdirectory>
+
+Run in dry-run mode (no files are actually copied) :
+    ./phi_cp_merges_hists.sh --dry-run
+    ./phi_cp_merges_hists.sh --dry-run <target_subdirectory>
+
+Notes:
+- The <target_subdirectory> refers to the folder inside each dataset
+  from which pickle files are collected (default: bugfree_samples_full_15_nov)
+- Dry-run mode prints all actions without performing them
+- The output directory is fixed at /eos/user/m/mwitt/phi_cp_merges_hists
+'''
 
 
 ###########################################
