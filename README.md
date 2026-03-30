@@ -5,7 +5,8 @@ A repository for plotting in the **CPinHToTauTau analysis**. This script perform
 - 🔴 **CP-even**
 - 🔵 **CP-odd**
 - 🟢 **CP-maximal mixing**
-It the asymmetries between these hypotheses and visualizes the results are computed. The approach can be applied to a **general case where periodic distributions are fitted `OUTPUT/version_name/<process_name>/*` and their asymmetries are analysed `OUTPUT/Asymmetry_*.pdf`**.
+
+and computes the asymmetries between one another. The approach can be applied to a **general case where geometric distributions are fitted `OUTPUT/version_name/<process_name>/*` and their asymmetries are analysed `OUTPUT/Asymmetry_*.pdf`**.
 
 ## Features
 - **Fit for CP Hypotheses :** The script provides fits to the data for the three CP hypotheses : CP-even, CP-odd, and maximal mixing.
